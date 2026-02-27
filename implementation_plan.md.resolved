@@ -1,0 +1,47 @@
+# Vanilla JS Contact MVC Web App
+A full Contact Management application using Vanilla JavaScript, following the Model-View-Controller (MVC) architecture pattern. It will feature full CRUD (Create, Read, Update, Delete) capabilities and use `localStorage` for data persistence. The design will be premium, modern, and feature micro-animations.
+
+## User Review Required
+None for now. The app will be built locally using Vanilla JS, HTML, and CSS.
+
+## Proposed Changes
+
+### Project Foundation
+- #### [NEW] `index.html`
+  The main HTML entry point featuring a clean, responsive layout. It will include a form for adding/editing contacts and a list container for displaying them.
+- #### [NEW] `css/style.css`
+  A vanilla CSS file implementing a modern, premium design system. It will feature:
+  - Custom Google Fonts (Inter or Outfit)
+  - CSS Variables for color theming (sleek dark mode or vibrant light mode)
+  - Glassmorphism effects
+  - Smooth transitions and hover animations
+  - Responsive layout using Flexbox/Grid
+
+### JavaScript MVC Architecture
+- #### [NEW] `js/Model.js`
+  Handles the application's data layer.
+  - Manages state (array of contacts)
+  - Handles `localStorage` synchronization
+  - Provides methods: `addContact`, `editContact`, `deleteContact`, `getContacts`
+- #### [NEW] `js/View.js`
+  Handles the presentation layer and DOM manipulation.
+  - Caches DOM elements
+  - Binds events (submit, click on edit/delete)
+  - Renders the contact list visually
+  - Manages micro-animations via adding/removing CSS classes
+- #### [NEW] `js/Controller.js`
+  Acts as the middleman between Model and View.
+  - Responds to View events
+  - Updates Model
+  - Triggers View updates
+- #### [NEW] `js/app.js`
+  The main initialization script that instantiates the Model, View, and Controller.
+
+## Verification Plan
+### Manual Verification
+1. Run application locally (via Live Server or just opening HTML file)
+2. Verify adding a new contact works and appears in the list.
+3. Verify refreshing the page retains the contacts (localStorage works).
+4. Verify editing a contact updates it immediately.
+5. Verify deleting a contact removes it from the list.
+6. Verify aesthetics and responsiveness across different window sizes.

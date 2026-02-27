@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Contact Manager</title>
+    <!-- Google Fonts: Inter for a modern, clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons for modern icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Background decorative elements -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+
+        <main class="glass-panel main-content">
+            <header class="app-header">
+                <div class="header-title">
+                    <i class='bx bxs-contact'></i>
+                    <h1>Contacts</h1>
+                </div>
+                <!-- Button to trigger the add contact modal -->
+                <button id="add-contact-btn" class="btn btn-primary">
+                    <i class='bx bx-plus'></i> Add Contact
+                </button>
+            </header>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <i class='bx bx-search search-icon'></i>
+                <input type="text" id="search-input" placeholder="Search contacts..." aria-label="Search contacts">
+            </div>
+
+            <!-- Contact List Container -->
+            <div class="contact-list-container">
+                <ul id="contact-list" class="contact-list">
+                    <!-- Contact items will be dynamically injected here by the View -->
+                </ul>
+                <div id="empty-state" class="empty-state hidden">
+                    <div class="empty-icon">
+                        <i class='bx bx-user-x'></i>
+                    </div>
+                    <h2>No contacts found</h2>
+                    <p>Get started by adding a new contact.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Adding/Editing Contacts -->
+    <div id="contact-modal" class="modal-overlay">
+        <div class="modal glass-panel">
+            <header class="modal-header">
+                <h2 id="modal-title">Add Contact</h2>
+                <button id="close-modal-btn" class="icon-btn" aria-label="Close modal">
+                    <i class='bx bx-x'></i>
+                </button>
+            </header>
+
+            <form id="contact-form" class="contact-form">
+                <!-- Hidden input to store contact ID when editing -->
+                <input type="hidden" id="contact-id">
+
+                <div class="form-group">
+                    <label for="contact-name">Full Name</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-user'></i>
+                        <input type="text" id="contact-name" name="name" placeholder="E.g., Jane Doe" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact-email">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-envelope'></i>
+                        <input type="email" id="contact-email" name="email" placeholder="jane@example.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact-phone">Phone Number</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-phone'></i>
+                        <input type="tel" id="contact-phone" name="phone" placeholder="+1 (555) 000-0000"
+                            pattern="[0-9\-\+\s\(\)]*" required>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-btn">Save Contact</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MVC Scripts -->
+    <script src="js/Model.js"></script>
+    <script src="js/View.js"></script>
+    <script src="js/Controller.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
