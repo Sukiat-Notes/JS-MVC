@@ -17,31 +17,22 @@ class Controller {
         // ==========================================
 
         // Define what happens when the Model's data changes.
-        // We tell the Model: "Whenever the contacts array changes, call this Controller method."
-        // We use arrow function to preserve `this` context binding to the Controller.
         this.model.bindContactListChanged(this.onContactListChanged);
 
         // ==========================================
         // INIT EVENT BINDINGS (View -> Controller -> Model)
         // ==========================================
 
-        // Tell the View: "When user submits the form, execute handleSaveContact."
         this.view.bindSaveContact(this.handleSaveContact);
-
-        // Tell the View: "When user clicks delete icon, execute handleDeleteContact."
         this.view.bindDeleteContact(this.handleDeleteContact);
-
-        // Tell the View: "When user clicks edit icon, get data via handleEditContact."
         this.view.bindEditContact(this.handleGetContact);
-
-        // Tell the View: "When user types in search bar, execute handleSearchContact."
         this.view.bindSearchContact(this.handleSearchContact);
 
         // ==========================================
         // INITIAL RENDER
         // ==========================================
-        // Force an initial render to display contacts loaded from LocalStorage on page load.
-        this.onContactListChanged(this.model.contacts);
+        // Fetch contacts entirely asynchronously from the backend API.
+        this.model.fetchContacts();
     }
 
     /**
@@ -64,13 +55,11 @@ class Controller {
      * @param {string} email - Contact Email.
      * @param {string} phone - Contact Phone.
      */
-    handleSaveContact = (id, name, email, phone) => {
+    handleSaveContact = async (id, name, email, phone) => {
         if (id) {
-            // Edit existing
-            this.model.editContact(id, name, email, phone);
+            await this.model.editContact(id, name, email, phone);
         } else {
-            // Create new
-            this.model.addContact(name, email, phone);
+            await this.model.addContact(name, email, phone);
         }
 
         // After save, clear the search input visually to show full list again
@@ -82,10 +71,9 @@ class Controller {
      * 
      * @param {string} id - The ID of contact to remove.
      */
-    handleDeleteContact = (id) => {
-        // Optionally add a small confirmation dialogue before deleting
+    handleDeleteContact = async (id) => {
         if (confirm('Are you sure you want to delete this contact?')) {
-            this.model.deleteContact(id);
+            await this.model.deleteContact(id);
         }
     };
 
@@ -96,7 +84,7 @@ class Controller {
      * @returns {Object} The contact data object.
      */
     handleGetContact = (id) => {
-        // Fetch specific contact data from Model
+        // Fetch specific contact data from Model (local state is fine here)
         return this.model.getContactById(id);
     };
 
@@ -106,15 +94,12 @@ class Controller {
      * @param {string} searchTerm - Lowercase text from search input.
      */
     handleSearchContact = (searchTerm) => {
-        // Filter the model's array directly based on name, email, or phone
         const filteredContacts = this.model.contacts.filter(contact => {
             return contact.name.toLowerCase().includes(searchTerm) ||
                 contact.email.toLowerCase().includes(searchTerm) ||
                 contact.phone.includes(searchTerm);
         });
 
-        // Tell View to render only the filtered results (bypassing normal render cycle)
-        // We don't save this to Model, it's just a temporary View state.
         this.view.displayContacts(filteredContacts);
     };
 }

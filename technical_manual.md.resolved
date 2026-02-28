@@ -1,0 +1,83 @@
+# Technical Manual: Contact MVC Application
+
+This technical manual details the architecture, files, and individual functions of the Contact Manager application. The application follows a strict **Model-View-Controller (MVC)** architectural pattern using **Vanilla JavaScript** on the frontend, and a **Vanilla Node.js** REST API backend connected to a MySQL database.
+
+---
+
+## 1. Directory Structure
+```text
+/JS-MVC
+│-- index.html         # Main HTML Document
+│-- server.js          # Node.js Backend Server
+│-- js/
+│   │-- app.js         # Application Entry Point
+│   │-- Model.js       # Data Logic Layer
+│   │-- View.js        # User Interface Layer
+│   │-- Controller.js  # Application Logic Layer
+│-- css/
+│   │-- style.css      # Custom Styles and Variables
+```
+
+---
+
+## 2. Frontend Files
+
+### [js/app.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/app.js)
+The entry point of the frontend application. It waits for the DOM to load before initializing the MVC components.
+
+*   `DOMContentLoaded listener`: Ensuring the HTML is fully parsed before JavaScript interacts with it. It instantiates the [Model](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#6-154), [View](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#6-309), and [Controller](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Controller.js#6-106), passing the model and view instances into the controller.
+
+### [js/Model.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js)
+The [Model](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#6-154) handles the data logic of the application. It manages the state (contacts) and interacts asynchronously with the backend API to fetch, create, update, and delete records.
+
+*   [constructor()](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#7-12): Initializes the local `contacts` state array and the `apiUrl` pointing to the backend server.
+*   [bindContactListChanged(callback)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#13-22): Registers a callback (usually from the Controller) that will be invoked whenever the model's data changes.
+*   [_commit()](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#23-31): Internal method to trigger the `onContactListChanged` callback, causing the View to re-render with the latest `this.contacts` data.
+*   `async fetchContacts()`: Sends a `GET` request to the backend API to retrieve all contacts and updates the local state.
+*   `async addContact(name, email, phone)`: Sends a `POST` request to the API with new contact details. On success, pushes the contact to the local state.
+*   `async editContact(id, updatedName, updatedEmail, updatedPhone)`: Sends a `PUT` request to update an existing contact by ID. Updates the specific item in the local array.
+*   `async deleteContact(id)`: Sends a `DELETE` request to the API. Filters the removed contact out of the local state.
+*   [getContactById(id)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#143-153): Synchronous helper that searches the local array for a contact by its ID, useful for populating edit forms quickly without a network roundtrip.
+
+### [js/View.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js)
+The [View](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#6-309) manages the visual representation (UI). It interacts directly with the DOM, listens to user events, and exposes methods for the Controller to update the screen. It has no direct knowledge of the Model.
+
+*   [constructor()](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#7-12): Caches all necessary DOM elements (lists, inputs, modals, buttons) into class properties and sets up pure UI event listeners (e.g., opening and closing modals).
+*   [openModal(titleString)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#75-84): Displays the modal overlay and sets its title context (either "Add Contact" or "Edit Contact").
+*   [closeModal()](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#85-92): Hides the modal overlay and clears out form inputs.
+*   [_resetForm()](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#93-102): Internal helper to clear the values of all form input fields.
+*   [createElement(tag, classes)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#103-119): Safely creates a new DOM element and assigns class names, mitigating XSS risks compared to concatenating `innerHTML`.
+*   [_getInitials(name)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#120-130): Helper function that extracts the first letter of the first and last name to generate text for the avatar circle.
+*   [displayContacts(contacts)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#135-212): The core render method. It clears the current DOM list, handles empty state visibility, and dynamically constructs HTML elements for each contact passed into it.
+*   [bindSaveContact(handler)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#218-244): Listens for form submission in the modal. Extracts input values and passes them to the Controller's handler.
+*   [bindDeleteContact(handler)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#245-266): Uses event delegation on the contact list to intercept clicks on delete icons, extracting the `data-id` and passing it to the Controller.
+*   [bindEditContact(handler)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#267-296): Intercepts clicks on edit icons, passing the ID to the Controller to fetch data, and populates the modal form with the returned contact data.
+*   [bindSearchContact(handler)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/View.js#297-308): Listens to keystrokes on the search input and passes the lowercase search term to the Controller for live filtering.
+
+### [js/Controller.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Controller.js)
+The [Controller](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Controller.js#6-106) acts as the bridge orchestrating the application. It binds the View's inputs to the Model's logic, and binds the Model's state changes to the View's rendering functions.
+
+*   [constructor(model, view)](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#7-12): Links the Model and View. Maps UI events to local handler methods. Triggers the initial `appModel.fetchContacts()` to load data on app startup.
+*   `onContactListChanged(contacts)`: Callback provided to the Model. When the Model data updates, this method is called, passing the fresh data to `view.displayContacts()`.
+*   `async handleSaveContact(id, name, email, phone)`: Triggered by the View on form submit. Decides between calling `model.editContact` (if ID exists) or `model.addContact` (if ID is empty).
+*   `async handleDeleteContact(id)`: Triggered by the View on delete click. Prompts for confirmation and calls `model.deleteContact()`.
+*   `handleGetContact(id)`: Triggered by the View when opening the edit modal. Calls `model.getContactById()` to retrieve data so the View can populate its inputs.
+*   `handleSearchContact(searchTerm)`: Triggered by the View while typing in the search bar. Filters the Model's local contact array based on the term and tells the View to render only the filtered subset.
+
+---
+
+## 3. Backend Files
+
+### [server.js](file:///C:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/server.js)
+A standard Node.js script using built-in libraries (`http`) and the `mysql2` package. It provides the RESTful API endpoints for the frontend to consume.
+
+*   **MySQL Pool Connection**: Uses `mysql.createPool()` to establish and manage connections to the `AntigravityMVC` database securely.
+*   `http.createServer((req, res) => {...})`: The main server initialization block.
+*   **CORS Handling**: Attaches standard headers (`Access-Control-Allow-Origin`, `Methods`, `Headers`) to permit cross-origin requests from the browser frontend. Handles `OPTIONS` preflight requests.
+*   [getRequestBody(req)](file:///C:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/server.js#44-61): A helper Promise that listens to data streams on the request object and parses incoming JSON payload bodies for `POST` and `PUT` methods.
+*   [sendResponse(res, statusCode, data)](file:///C:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/server.js#62-67): A helper function to standardise HTTP responses, writing the status code, JSON header, and stringified payload to the response stream.
+*   **Routing Logic**:
+    *   **GET `/api/contacts`**: Executes a `SELECT * FROM contacts` query and returns the results.
+    *   **POST `/api/contacts`**: Parses the incoming JSON body. Validates required fields, and executes an `INSERT INTO contacts` query.
+    *   **DELETE `/api/contacts/:id`**: Extracts the ID from the URL pathname. Executes a `DELETE FROM contacts WHERE id = ?` query.
+    *   **PUT `/api/contacts/:id`**: Extracts the ID from the URL. Parses the JSON body. Executes an `UPDATE contacts SET ... WHERE id = ?` query.

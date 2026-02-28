@@ -1,35 +1,13 @@
 /**
  * The Model handles the data logic of the application.
- * It is responsible for managing the contacts data, state, and interacting with the browser's LocalStorage.
+ * It is responsible for managing the contacts data, state, and interacting with the backend API.
  * It enforces rules on data manipulation and notifies the Controller when the data changes.
  */
 class Model {
     constructor() {
-        // Initialize an array of contacts.
-        // It tries to fetch existing contacts from LocalStorage or defaults to an empty array.
-        // JSON.parse converts the JSON string back into a JavaScript array of objects.
-        this.contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-    }
-
-    /**
-     * Internal method to persist the contacts array to LocalStorage.
-     * This ensures data survives page reloads.
-     * JSON.stringify converts the JavaScript array to a JSON string.
-     * 
-     * @param {Array} contacts - The array of contact objects to save.
-     */
-    _commit(contacts) {
-        // Log the state change (optional, helpful for debugging)
-        console.log('Model._commit: Saving contacts to LocalStorage', contacts);
-        
-        // Save to LocalStorage using the key 'contacts'
-        localStorage.setItem('contacts', JSON.stringify(contacts));
-        
-        // Notify the controller that the state has changed
-        // This triggers the onContactListChanged callback if it's bound.
-        if (this.onContactListChanged) {
-            this.onContactListChanged(contacts);
-        }
+        // Initialize an empty array of contacts.
+        this.contacts = [];
+        this.apiUrl = 'http://localhost:3000/api/contacts';
     }
 
     /**
@@ -43,67 +21,128 @@ class Model {
     }
 
     /**
-     * Creates a new contact and adds it to the list.
+     * Internal method to trigger the view update callback.
+     */
+    _commit() {
+        if (this.onContactListChanged) {
+            this.onContactListChanged(this.contacts);
+        }
+    }
+
+    /**
+     * Fetches all contacts from the backend API.
+     */
+    async fetchContacts() {
+        try {
+            const response = await fetch(this.apiUrl);
+            if (!response.ok) throw new Error('Failed to fetch contacts');
+            const data = await response.json();
+            this.contacts = data;
+            this._commit();
+        } catch (error) {
+            console.error('Model: Error fetching contacts:', error);
+            // Optionally could trigger an error state in view
+        }
+    }
+
+    /**
+     * Creates a new contact and adds it to the list via the API.
      * 
      * @param {string} name - The Full Name of the contact.
      * @param {string} email - The Email Address of the contact.
      * @param {string} phone - The Phone Number of the contact.
      */
-    addContact(name, email, phone) {
-        // Create a new contact object with a unique timestamp-based ID
+    async addContact(name, email, phone) {
         const contact = {
-            id: Date.now().toString(), // Generate a unique ID
+            id: Date.now().toString(), // Generate a unique ID (frontend generated for simplicity)
             name: name,
             email: email,
             phone: phone
         };
 
-        // Add the new contact to the end of the contacts array
-        this.contacts.push(contact);
-        
-        // Save the updated list to LocalStorage and trigger view update
-        this._commit(this.contacts);
+        try {
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(contact)
+            });
+
+            if (!response.ok) throw new Error('Failed to add contact');
+
+            // Add to local state after successful API call
+            this.contacts.push(contact);
+            this._commit();
+        } catch (error) {
+            console.error('Model: Error adding contact:', error);
+        }
     }
 
     /**
-     * Updates an existing contact based on its ID.
+     * Updates an existing contact via the API.
      * 
      * @param {string} id - The ID of the contact to update.
      * @param {string} updatedName - The new Full Name.
      * @param {string} updatedEmail - The new Email Address.
      * @param {string} updatedPhone - The new Phone Number.
      */
-    editContact(id, updatedName, updatedEmail, updatedPhone) {
-        // Map through the array and replace the matching contact with updated values
-        this.contacts = this.contacts.map((contact) =>
-            contact.id === id ? { 
-                id: contact.id, // Preserve the original ID
-                name: updatedName, 
-                email: updatedEmail, 
-                phone: updatedPhone 
-            } : contact // Return unchanged contact if ID doesn't match
-        );
+    async editContact(id, updatedName, updatedEmail, updatedPhone) {
+        const updatedContact = {
+            name: updatedName,
+            email: updatedEmail,
+            phone: updatedPhone
+        };
 
-        // Save the updated list to LocalStorage and trigger view update
-        this._commit(this.contacts);
+        try {
+            const response = await fetch(`${this.apiUrl}/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedContact)
+            });
+
+            if (!response.ok) throw new Error('Failed to edit contact');
+
+            // Update local state after successful API call
+            this.contacts = this.contacts.map((contact) =>
+                contact.id === id ? {
+                    id: contact.id,
+                    ...updatedContact
+                } : contact
+            );
+
+            this._commit();
+        } catch (error) {
+            console.error('Model: Error editing contact:', error);
+        }
     }
 
     /**
-     * Deletes a contact from the list based on its ID.
+     * Deletes a contact via the API.
      * 
      * @param {string} id - The ID of the contact to remove.
      */
-    deleteContact(id) {
-        // Filter out the contact with the matching ID, keeping only those that don't match
-        this.contacts = this.contacts.filter((contact) => contact.id !== id);
+    async deleteContact(id) {
+        try {
+            const response = await fetch(`${this.apiUrl}/${id}`, {
+                method: 'DELETE'
+            });
 
-        // Save the filtered list to LocalStorage and trigger view update
-        this._commit(this.contacts);
+            if (!response.ok) throw new Error('Failed to delete contact');
+
+            // Remove from local state after successful API call
+            this.contacts = this.contacts.filter((contact) => contact.id !== id);
+            this._commit();
+        } catch (error) {
+            console.error('Model: Error deleting contact:', error);
+        }
     }
 
     /**
-     * Returns a specific contact by its ID.
-     * Useful for populate the edit modal with current data.
+     * Returns a specific contact by its ID from local state.
+     * Useful for populating the edit modal with current data.
      * 
      * @param {string} id - The ID of the contact to find.
      * @returns {Object|undefined} The contact object or undefined if not found.
