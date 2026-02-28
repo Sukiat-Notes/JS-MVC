@@ -1,47 +1,43 @@
-# Vanilla JS Contact MVC Web App
-A full Contact Management application using Vanilla JavaScript, following the Model-View-Controller (MVC) architecture pattern. It will feature full CRUD (Create, Read, Update, Delete) capabilities and use `localStorage` for data persistence. The design will be premium, modern, and feature micro-animations.
+# Integrate MySQL for Data Storage
 
-## User Review Required
-None for now. The app will be built locally using Vanilla JS, HTML, and CSS.
+Currently, the application is a frontend-only vanilla JavaScript app that uses `localStorage` for data persistence. Client-side JavaScript cannot securely or directly connect to a MySQL database. Therefore, we will create a lightweight Node.js backend server using only standard libraries (no Express) to act as a bridge between the frontend and the database, preserving the "Vanilla" philosophy across the stack while allowing secure MySQL integration.
 
 ## Proposed Changes
 
-### Project Foundation
-- #### [NEW] `index.html`
-  The main HTML entry point featuring a clean, responsive layout. It will include a form for adding/editing contacts and a list container for displaying them.
-- #### [NEW] `css/style.css`
-  A vanilla CSS file implementing a modern, premium design system. It will feature:
-  - Custom Google Fonts (Inter or Outfit)
-  - CSS Variables for color theming (sleek dark mode or vibrant light mode)
-  - Glassmorphism effects
-  - Smooth transitions and hover animations
-  - Responsive layout using Flexbox/Grid
+### Backend Server (Node.js)
+- Initialize project with `npm init -y`.
+- Install only the required MySQL driver: `npm install mysql2`.
+- We will use Node's built-in `http` module to create the API server, maintaining a "Vanilla" environment without frameworks like Express.
 
-### JavaScript MVC Architecture
-- #### [NEW] `js/Model.js`
-  Handles the application's data layer.
-  - Manages state (array of contacts)
-  - Handles `localStorage` synchronization
-  - Provides methods: `addContact`, `editContact`, `deleteContact`, `getContacts`
-- #### [NEW] `js/View.js`
-  Handles the presentation layer and DOM manipulation.
-  - Caches DOM elements
-  - Binds events (submit, click on edit/delete)
-  - Renders the contact list visually
-  - Manages micro-animations via adding/removing CSS classes
-- #### [NEW] `js/Controller.js`
-  Acts as the middleman between Model and View.
-  - Responds to View events
-  - Updates Model
-  - Triggers View updates
-- #### [NEW] `js/app.js`
-  The main initialization script that instantiates the Model, View, and Controller.
+#### [NEW] `package.json`
+To manage backend dependencies and scripts.
+
+#### [NEW] `server.js`
+Create a Vanilla Node.js server using the `http` module. It will:
+- Handle CORS headers.
+- Parse JSON request bodies.
+- Provide RESTful API endpoints (`GET`, `POST`, `PUT`, `DELETE` for `/api/contacts`).
+- Use the `mysql2` package to connect to `AntigravityMVC` database with user `root` and password `sa123`.
+
+### Frontend Application
+
+#### [MODIFY] [js/Model.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js)
+Refactor the synchronous `localStorage` logic to use asynchronous `fetch` calls to our new backend:
+- [constructor](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#7-13): Will initialize empty and expose a method to load initial data.
+- [addContact](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#45-67): Send `POST` request to API.
+- [editContact](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#68-90): Send `PUT` request to API.
+- [deleteContact](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#91-103): Send `DELETE` request to API.
+- All backend calls will use standard Vanilla JS `fetch`.
+
+#### [MODIFY] [js/Controller.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Controller.js)
+Adjust to handle `async/await` since data fetching and manipulation will now be asynchronous. Update the initialization logic to pull from the new API structure.
 
 ## Verification Plan
+
+### Automated Tests
+- We will test the API endpoints locally using PowerShell `Invoke-RestMethod` to ensure the Vanilla Node.js server connects to MySQL correctly and executes queries.
+
 ### Manual Verification
-1. Run application locally (via Live Server or just opening HTML file)
-2. Verify adding a new contact works and appears in the list.
-3. Verify refreshing the page retains the contacts (localStorage works).
-4. Verify editing a contact updates it immediately.
-5. Verify deleting a contact removes it from the list.
-6. Verify aesthetics and responsiveness across different window sizes.
+- Start the server (`node server.js`).
+- Open [index.html](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/index.html) in the browser (or run via a simple local server if CORS requires it).
+- Add, edit, and delete contacts in the UI and verify that the changes persist to the MySQL database by refreshing the page and checking the data.

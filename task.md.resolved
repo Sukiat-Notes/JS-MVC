@@ -1,0 +1,12 @@
+# Integrate MySQL for Data Storage
+
+- [x] Create Vanilla Node.js backend server
+  - [x] Initialize `package.json` and install `mysql2`
+  - [x] Create [server.js](file:///C:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/server.js) using built-in `http` module to handle API routing, CORS, and request parsing
+  - [x] Create database connection utility inside [server.js](file:///C:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/server.js)
+- [x] Set up MySQL Database
+  - [x] Create database schema/table (`contacts`) if it doesn't exist
+- [x] Refactor Frontend Data Model
+  - [x] Update [Model.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js) to use [fetch](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Model.js#32-47) instead of `localStorage`
+  - [x] Handle asynchronous data flow in [Controller.js](file:///c:/Users/GOZA/OneDrive/Codes/Antigavity/JS-MVC/js/Controller.js)
+- [x] Test the full stack application
